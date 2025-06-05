@@ -1,0 +1,109 @@
+
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "API Informes ClickUp",
+    "version": "1.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://77822dde-d46d-43ff-9c56-73037051e1a1-00-3cea2ig5as5vp.riker.replit.dev"
+    }
+  ],
+  "paths": {
+    "/api/tareas": {
+      "get": {
+        "operationId": "obtenerTareas",
+        "summary": "Obtener tareas con información adicional",
+        "description": "Devuelve tareas modificadas recientemente, con opción de incluir historial de actividades y comentarios.",
+        "parameters": [
+          {
+            "name": "espacio_id",
+            "in": "query",
+            "required": true,
+            "description": "ID del espacio de ClickUp",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "dias",
+            "in": "query",
+            "required": false,
+            "description": "Cantidad de días hacia atrás para filtrar tareas (por defecto 7)",
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "incluir_actividad",
+            "in": "query",
+            "required": false,
+            "description": "Si es 'true', incluir historial de actividad por tarea",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "dias_actividad",
+            "in": "query",
+            "required": false,
+            "description": "Cantidad de días hacia atrás para filtrar actividades por tarea (por defecto 15)",
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "incluir_comentarios",
+            "in": "query",
+            "required": false,
+            "description": "Si es 'true', incluir los comentarios por tarea",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de tareas con sus detalles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "nombre": { "type": "string" },
+                      "estado": { "type": "string" },
+                      "responsables": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                      },
+                      "actualizada": { "type": "string" },
+                      "descripcion": { "type": "string" },
+                      "campos_personalizados": { "type": "array" },
+                      "actividades": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "fecha": { "type": "string" },
+                            "tipo": { "type": "string" },
+                            "usuario": { "type": "string" },
+                            "descripcion": { "type": "string" }
+                          }
+                        }
+                      },
+                      "comentarios": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "fecha": { "type": "string" },
+                            "autor": { "type": "string" },
+                            "contenido": { "type": "string" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
