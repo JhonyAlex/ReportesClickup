@@ -1,24 +1,12 @@
 const express = require('express');
-const fetch = require('node-fetch');
+const { obtenerTareas } = require('./utils/clickup'); // Funciones para la API de ClickUp
 require('dotenv').config();
 
 const app = express();
+// Heroku proporciona el puerto en la variable PORT
 const PORT = process.env.PORT || 3000;
-const CLICKUP_API_BASE = 'https://api.clickup.com/api/v2';
 
-/**
- * Obtiene las tareas de un equipo en ClickUp.
- * @param {string} teamId - ID del equipo en ClickUp.
- * @param {string} token - Token de autenticaci\xC3\xB3n para la API.
- * @returns {Promise<object>} Respuesta JSON de ClickUp con la lista de tareas.
- */
-async function obtenerTareas(teamId, token) {
-  const url = `${CLICKUP_API_BASE}/team/${teamId}/task`;
-  const resp = await fetch(url, { headers: { Authorization: token } });
-  return resp.json();
-}
-
-// Endpoint de prueba
+// Endpoint base para verificar funcionamiento
 app.get('/', (req, res) => {
   res.send('API de reportes ClickUp funcionando');
 });
