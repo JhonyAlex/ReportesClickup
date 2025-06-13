@@ -1,6 +1,6 @@
 # Reportes ClickUp
 
-API sencilla para obtener tareas desde ClickUp.
+API sencilla para obtener tareas desde ClickUp lista para desplegar en Heroku.
 
 ## Uso
 
@@ -8,7 +8,7 @@ API sencilla para obtener tareas desde ClickUp.
    ```bash
    npm install
    ```
-2. Crea un archivo `.env` con tu `CLICKUP_TOKEN`.
+2. Copia `.env.example` a `.env` y coloca tu `CLICKUP_TOKEN`.
 3. Inicia el servidor:
    ```bash
    npm start
