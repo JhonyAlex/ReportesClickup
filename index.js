@@ -6,13 +6,16 @@ const app = express();
 // Heroku proporciona el puerto en la variable PORT
 const PORT = process.env.PORT || 3000;
 
+// Endpoints disponibles para la consulta de tareas
+const API_TAREAS_ENDPOINTS = ['/api_tareas', '/api_tareas.php'];
+
 // Endpoint base para verificar funcionamiento
 app.get('/', (req, res) => {
   res.send('API de reportes ClickUp funcionando');
 });
 
 // Devuelve las tareas de un equipo especificado
-app.get('/api_tareas', async (req, res) => {
+app.get(API_TAREAS_ENDPOINTS, async (req, res) => {
   const { team_id: teamId } = req.query;
   const token = process.env.CLICKUP_TOKEN;
 

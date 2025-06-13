@@ -13,3 +13,14 @@ API sencilla para obtener tareas desde ClickUp lista para desplegar en Heroku.
    ```bash
    npm start
    ```
+
+Una vez iniciado el servidor puedes consultar las tareas con los siguientes
+endpoints equivalentes:
+
+```
+GET /api_tareas
+GET /api_tareas.php
+```
+
+Recuerda proporcionar el parámetro `team_id` y definir tu `CLICKUP_TOKEN` en el
+archivo `.env`.
