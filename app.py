@@ -4,9 +4,9 @@ from flask import Flask, jsonify
 app = Flask(__name__)
 
 @app.route("/api_tareas.php", methods=["GET"])
-def api_tareas():
-    # Solo una respuesta de prueba
-    return jsonify({"status": "ok"})
+def obtener_tareas():
+    # Aquí puedes poner lógica real luego
+    return jsonify({"mensaje": "API funcionando correctamente", "estado": "ok"})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
