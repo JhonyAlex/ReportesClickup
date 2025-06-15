@@ -1,6 +1,6 @@
 const express = require('express');
 const { obtenerTareas } = require('../utils/clickup');
-const { API_TAREAS_ENDPOINTS } = require('../config');
+const { API_TAREAS_ENDPOINTS, DAY_MS } = require('../config');
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ function obtenerToken(req) {
  * o en la consulta.
  */
 async function manejarApiTareas(req, res) {
-  const teamId = req.query.team_id;
+  const { team_id: teamId, token: _unused, dias, ...rest } = req.query;
   const token = obtenerToken(req);
 
   if (!teamId || !token) {
@@ -28,8 +28,16 @@ async function manejarApiTareas(req, res) {
     });
   }
 
+  const params = { ...rest };
+  if (dias) {
+    const diasNum = Number(dias);
+    if (!Number.isNaN(diasNum) && diasNum > 0) {
+      params.date_updated_gt = Date.now() - diasNum * DAY_MS;
+    }
+  }
+
   try {
-    const datos = await obtenerTareas(teamId, token);
+    const datos = await obtenerTareas(teamId, token, params);
     res.json(datos);
   } catch (err) {
     res.status(500).json({

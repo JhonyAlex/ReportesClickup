@@ -7,10 +7,17 @@ const { CLICKUP_API_BASE } = require('../config');
  * @param {string} token - Token de autenticación para la API.
  * @returns {Promise<object>} Respuesta JSON de la API.
  */
-async function callClickUp(endpoint, token) {
-  const url = `${CLICKUP_API_BASE}${endpoint}`;
+async function callClickUp(endpoint, token, params = {}) {
+  const url = new URL(`${CLICKUP_API_BASE}${endpoint}`);
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      url.searchParams.append(key, value);
+    }
+  });
   try {
-    const resp = await fetch(url, { headers: { Authorization: token } });
+    const resp = await fetch(url.toString(), {
+      headers: { Authorization: token },
+    });
     if (!resp.ok) {
       throw new Error(`Error ${resp.status}`);
     }
@@ -26,8 +33,8 @@ async function callClickUp(endpoint, token) {
  * @param {string} token - Token de autenticación.
  * @returns {Promise<object>} Tareas obtenidas.
  */
-function obtenerTareas(teamId, token) {
-  return callClickUp(`/team/${teamId}/task`, token);
+function obtenerTareas(teamId, token, params = {}) {
+  return callClickUp(`/team/${teamId}/task`, token, params);
 }
 
 module.exports = {
