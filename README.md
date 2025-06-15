@@ -69,8 +69,8 @@ web: node index.js
 
 | Método | Ruta                                              | Descripción                                                                     |
 | ------ | ------------------------------------------------- | ------------------------------------------------------------------------------- |
-| GET    | `/api_tareas?team_id=9015702015`              | Devuelve el JSON cacheado con tareas.                                           |
-| GET    | `/actualizar_cache?team_id=9015702015&dias=7` | Llama a ClickUp, filtra últimas *N* días, guarda en `cache/tareas_{team}.json`. |
+| GET    | `/api_tareas?space_id=9015702015`              | Devuelve el JSON cacheado con tareas.                                           |
+| GET    | `/actualizar_cache?space_id=9015702015&dias=7` | Llama a ClickUp, filtra últimas *N* días, guarda en `cache/tareas_{space}.json`. |
 
 ### Ejemplo de respuesta `/api_tareas.php`
 
@@ -114,7 +114,7 @@ Incluye parámetros, ejemplos y códigos 200 / 400 / 500.
 2. En **ChatGPT → “Create a GPT”**:
 
    * Tools → “Add your API” → pega `https://reportes.pigmea.click/openapi.json`.
-   * Añade instrucciones (ej.: “Cuando el usuario pida *tareas recientes*, llama a `obtenerTareas` con `team_id`=`9015702015`”).
+   * Añade instrucciones (ej.: “Cuando el usuario pida *tareas recientes*, llama a `obtenerTareas` con `space_id`=`9015702015`”).
 3. Prueba diálogos:
 
    * *“Actualiza la caché de Pigmea y dame las tareas de los últimos 3 días.”* → GPT invoca `actualizarCache`, luego `obtenerTareas`.
@@ -141,10 +141,10 @@ Incluye parámetros, ejemplos y códigos 200 / 400 / 500.
 ```php
 <?php
 header("Content-Type: application/json");
-$team = $_GET['team_id'] ?? null;
-if (!$team) { echo json_encode(["error"=>"team_id requerido"]); exit; }
+$space = $_GET['space_id'] ?? null;
+if (!$space) { echo json_encode(["error"=>"space_id requerido"]); exit; }
 
-$cache = __DIR__ . "/cache/tareas_{$team}.json";
+$cache = __DIR__ . "/cache/tareas_{$space}.json";
 if (!file_exists($cache)) { echo json_encode(["error"=>"Cache no encontrado"]); exit; }
 
 echo file_get_contents($cache);
@@ -155,17 +155,17 @@ echo file_get_contents($cache);
 ```php
 <?php
 header("Content-Type: application/json");
-$team = $_GET['team_id'] ?? null;
+$space = $_GET['space_id'] ?? null;
 $dias = intval($_GET['dias'] ?? 7);
 $token = getenv("CLICKUP_TOKEN");
-if (!$team || !$token) { echo json_encode(["error"=>"team_id o token faltante"]); exit; }
+if (!$space || !$token) { echo json_encode(["error"=>"space_id o token faltante"]); exit; }
 
 $desde = time() - $dias*86400;
-$url = "https://api.clickup.com/api/v2/team/$team/task?archived=false&date_updated_gt=$desde";
+$url = "https://api.clickup.com/api/v2/space/$space/task?archived=false&date_updated_gt=$desde";
 $opts = [ "http"=>["header"=>"Authorization: $token\r\n"] ];
 $json = file_get_contents($url, false, stream_context_create($opts));
 
-file_put_contents(__DIR__."/cache/tareas_{$team}.json", $json);
+file_put_contents(__DIR__."/cache/tareas_{$space}.json", $json);
 echo json_encode(["success"=>true,"message"=>"Cache actualizado"]);
 ```
 
@@ -182,8 +182,8 @@ web: heroku-php-apache2 .
 | Verificación     | Comando / URL                                                                  | Resultado esperado     |
 | ---------------- | ------------------------------------------------------------------------------ | ---------------------- |
 | Heroku responde  | `curl -I https://reportes.pigmea.click/`                                       | `HTTP/2 200`           |
-| Endpoint JSON    | `https://reportes.pigmea.click/api_tareas.php?team_id=9015702015`              | Lista de tareas        |
-| Actualizar caché | `https://reportes.pigmea.click/actualizar_cache.php?team_id=9015702015&dias=3` | `{"success":true,...}` |
+| Endpoint JSON    | `https://reportes.pigmea.click/api_tareas.php?space_id=9015702015`              | Lista de tareas        |
+| Actualizar caché | `https://reportes.pigmea.click/actualizar_cache.php?space_id=9015702015&dias=3` | `{"success":true,...}` |
 | OpenAPI          | `https://reportes.pigmea.click/openapi.json`                                   | Archivo JSON           |
 
 ---
