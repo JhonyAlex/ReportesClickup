@@ -187,5 +187,3 @@ web: heroku-php-apache2 .
 | OpenAPI          | `https://reportes.pigmea.click/openapi.json`                                   | Archivo JSON           |
 
 ---
-
-Con esto tienes **todo el contexto técnico** para duplicar el proyecto en otro chat, documentar o continuar evolucionando la solución.
