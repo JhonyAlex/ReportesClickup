@@ -1,7 +1,7 @@
 ### 📚 Resumen completo del proyecto **“Reportes ClickUp API”** (estado al 15-jun-2025)
 
 > **Objetivo**
-> Montar un backend en **Heroku** (Node / Python → tú escogiste **PHP/flask-style** con archivos sueltos) que obtenga tareas de ClickUp, las almacene en caché y exponga dos endpoints públicos bajo tu dominio **`reportes.pigmea.click`**, consumibles por un GPT mediante un documento **OpenAPI 3.1** alojado en el mismo servidor.
+> Montar un backend en **Heroku** basado en **Node.js y Express** que obtenga tareas de ClickUp, las almacene en caché y exponga dos endpoints públicos bajo tu dominio **`reportes.pigmea.click`**, consumibles por un GPT mediante un documento **OpenAPI 3.1** alojado en el mismo servidor.
 >
 > Esto reemplaza la prueba previa en Replit y elimina la dependencia de Cloudflare/Hostinger.
 
@@ -18,17 +18,15 @@
 ```
 ReportesClickup/
 │
-├── app.py                # (si usas Flask) *o* index.js si fuera Node
-├── api_tareas.php        # Endpoint que lee la caché y responde JSON
-├── actualizar_cache.php  # Endpoint que consulta ClickUp y sobre-escribe la caché
+├── index.js             # Servidor Express
+├── config.js            # Constantes de configuración
+├── routes/
+│   └── tareas.js        # Endpoint de tareas
 ├── utils/
-│   └── clickup.php       # Función reutilizable para llamar a ClickUp (opcional)
-├── cache/
-│   └── tareas_9015702015.json  # Archivo de caché (escrito por actualizar_cache.php)
-├── Procfile              # web: heroku-php-apache2 .  (o  web: node index.js / gunicorn app:app)
-├── composer.json         # (solo si tu proyecto PHP requiere dependencias)
-├── package.json          # (si fuera Node)
-├── requirements.txt      # (si fuera Python)
+│   └── clickup.js       # Lógica de consulta a ClickUp
+├── .env.example         # Variables de entorno de ejemplo
+├── Procfile             # web: node index.js
+├── package.json         # Dependencias del proyecto
 └── openapi_clickup_api.json  # Especificación OpenAPI 3.1 (canvas)
 ```
 
@@ -47,11 +45,11 @@ ReportesClickup/
   * `CLICKUP_TOKEN` → *tu token personal de ClickUp*
   * (Opcional) `PORT` lo asigna Heroku, pero tu app debe usarlo.
 
-* **Procfile** (PHP):
+* **Procfile** (Node):
 
-  ```
-  web: heroku-php-apache2 .
-  ```
+```
+web: node index.js
+```
 
 * **Buildpacks automáticos**: Heroku detecta PHP o Node según archivos presentes.
 
@@ -71,8 +69,8 @@ ReportesClickup/
 
 | Método | Ruta                                              | Descripción                                                                     |
 | ------ | ------------------------------------------------- | ------------------------------------------------------------------------------- |
-| GET    | `/api_tareas.php?team_id=9015702015`              | Devuelve el JSON cacheado con tareas.                                           |
-| GET    | `/actualizar_cache.php?team_id=9015702015&dias=7` | Llama a ClickUp, filtra últimas *N* días, guarda en `cache/tareas_{team}.json`. |
+| GET    | `/api_tareas?team_id=9015702015`              | Devuelve el JSON cacheado con tareas.                                           |
+| GET    | `/actualizar_cache?team_id=9015702015&dias=7` | Llama a ClickUp, filtra últimas *N* días, guarda en `cache/tareas_{team}.json`. |
 
 ### Ejemplo de respuesta `/api_tareas.php`
 
