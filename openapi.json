@@ -15,9 +15,9 @@
         "summary": "Devuelve tareas del espacio indicado",
         "parameters": [
           {
-            "name": "team_id",
+            "name": "space_id",
             "in": "query",
-            "description": "Identificador del espacio o equipo",
+            "description": "Identificador del espacio en ClickUp",
             "required": true,
             "schema": { "type": "string" }
           },
@@ -51,9 +51,9 @@
         "summary": "Refresca la caché local consultando ClickUp",
         "parameters": [
           {
-            "name": "team_id",
+            "name": "space_id",
             "in": "query",
-            "description": "Identificador del espacio o equipo",
+            "description": "Identificador del espacio en ClickUp",
             "required": true,
             "schema": { "type": "string" }
           },
