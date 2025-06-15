@@ -24,72 +24,31 @@
           {
             "name": "token",
             "in": "query",
-            "description": "Token opcional si no est\u00e1 definido en el servidor",
+            "description": "Token opcional si no está definido en el servidor",
             "required": false,
             "schema": { "type": "string" }
           },
           {
             "name": "dias",
             "in": "query",
-            "description": "Filtrar por tareas actualizadas en los \u00faltimos N d\u00edas",
+            "description": "Filtrar por tareas actualizadas en los últimos N días",
             "required": false,
             "schema": { "type": "integer", "minimum": 1 }
           }
         ],
         "responses": {
           "200": {
-            "description": "Lista de tareas obtenidas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "tasks": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": { "type": "string" },
-                          "custom_id": { "type": "string" },
-                          "name": { "type": "string" },
-                          "description": { "type": "string" },
-                          "status": {
-                            "type": "object",
-                            "properties": {
-                              "status": { "type": "string" },
-                              "color": { "type": "string" }
-                            }
-                          },
-                          "due_date": { "type": "string" },
-                          "assignees": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "id": { "type": "integer" },
-                                "username": { "type": "string" }
-                              }
-                            }
-                          },
-                          "url": { "type": "string", "format": "uri" }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            "description": "Lista de tareas obtenidas"
           },
-          "400": { "description": "Par\u00e1metros faltantes" },
+          "400": { "description": "Parámetros faltantes" },
           "500": { "description": "Fallo interno" }
         }
       }
-    }
-    ,
-    "/api_tareas.php": {
+    },
+    "/actualizar_cache.php": {
       "get": {
-        "operationId": "obtenerTareas",
-        "summary": "Devuelve tareas del espacio indicado",
+        "operationId": "actualizarCache",
+        "summary": "Refresca la caché local consultando ClickUp",
         "parameters": [
           {
             "name": "team_id",
@@ -101,63 +60,21 @@
           {
             "name": "token",
             "in": "query",
-            "description": "Token opcional si no est\u00e1 definido en el servidor",
+            "description": "Token opcional si no está definido en el servidor",
             "required": false,
             "schema": { "type": "string" }
           },
           {
             "name": "dias",
             "in": "query",
-            "description": "Filtrar por tareas actualizadas en los \u00faltimos N d\u00edas",
+            "description": "Número de días a consultar en ClickUp",
             "required": false,
             "schema": { "type": "integer", "minimum": 1 }
           }
         ],
         "responses": {
-          "200": {
-            "description": "Lista de tareas obtenidas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "tasks": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": { "type": "string" },
-                          "custom_id": { "type": "string" },
-                          "name": { "type": "string" },
-                          "description": { "type": "string" },
-                          "status": {
-                            "type": "object",
-                            "properties": {
-                              "status": { "type": "string" },
-                              "color": { "type": "string" }
-                            }
-                          },
-                          "due_date": { "type": "string" },
-                          "assignees": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "id": { "type": "integer" },
-                                "username": { "type": "string" }
-                              }
-                            }
-                          },
-                          "url": { "type": "string", "format": "uri" }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": { "description": "Par\u00e1metros faltantes" },
+          "200": { "description": "Cache actualizada" },
+          "400": { "description": "Parámetros faltantes" },
           "500": { "description": "Fallo interno" }
         }
       }
