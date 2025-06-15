@@ -1,6 +1,6 @@
 const express = require('express');
 const { obtenerTareas } = require('../utils/clickup');
-const { API_TAREAS_ENDPOINTS } = require('../config');
+const { API_TAREAS_ENDPOINTS, DAY_MS } = require('../config');
 
 const router = express.Router();
 
@@ -30,8 +30,10 @@ async function manejarApiTareas(req, res) {
 
   const params = { ...rest };
   if (dias) {
-    const ms = Date.now() - Number(dias) * 86400000;
-    params.date_updated_gt = ms;
+    const diasNum = Number(dias);
+    if (!Number.isNaN(diasNum) && diasNum > 0) {
+      params.date_updated_gt = Date.now() - diasNum * DAY_MS;
+    }
   }
 
   try {
