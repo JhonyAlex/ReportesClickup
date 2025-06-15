@@ -1,8 +1,6 @@
 const express = require('express');
 const { obtenerTareas } = require('../utils/clickup');
-
-// Endpoints equivalentes para obtener tareas
-const API_TAREAS_ENDPOINTS = ['/api_tareas', '/api_tareas.php'];
+const { API_TAREAS_ENDPOINTS } = require('../config');
 
 const router = express.Router();
 

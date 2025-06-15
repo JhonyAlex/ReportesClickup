@@ -1,6 +1,5 @@
 const fetch = require('node-fetch');
-
-const CLICKUP_API_BASE = 'https://api.clickup.com/api/v2';
+const { CLICKUP_API_BASE } = require('../config');
 
 /**
  * Realiza una solicitud a la API de ClickUp.
@@ -10,11 +9,15 @@ const CLICKUP_API_BASE = 'https://api.clickup.com/api/v2';
  */
 async function callClickUp(endpoint, token) {
   const url = `${CLICKUP_API_BASE}${endpoint}`;
-  const resp = await fetch(url, { headers: { Authorization: token } });
-  if (!resp.ok) {
-    throw new Error(`Error ${resp.status}`);
+  try {
+    const resp = await fetch(url, { headers: { Authorization: token } });
+    if (!resp.ok) {
+      throw new Error(`Error ${resp.status}`);
+    }
+    return await resp.json();
+  } catch (err) {
+    throw new Error(`Fallo al conectar con ClickUp: ${err.message}`);
   }
-  return resp.json();
 }
 
 /**
