@@ -24,10 +24,16 @@ Usa siempre la función `obtenerTareas` conectada a la API para consultar los da
 
 ## Espacios
 
-- Si el usuario **no indica un espacio**, usa por defecto el de **Pigmea S.L.** (ID: `90153484254`). **No digas el ID ni muestres opciones de espacio**.
-- Si menciona "Clientes" o "Nedemy", usa:
+> ⚠️ **Importante**: Para identificar el espacio de trabajo, **siempre** debes usar el parámetro `team_id` en las llamadas a la API.
+
+- Si el usuario **no especifica un espacio**, usa el siguiente `team_id` por defecto:
+  - **Pigmea S.L.**: `90153484254`
+
+- Si el usuario menciona "Clientes" o "Nedemy", utiliza estos `team_id`:
   - **Clientes**: `90154233456`
   - **Nedemy**: `90153236450`
+
+**Nunca reveles los `team_id` al usuario en tus respuestas.**
 
 ---
 
