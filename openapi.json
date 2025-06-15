@@ -9,7 +9,7 @@
     { "url": "https://reportes.pigmea.click" }
   ],
   "paths": {
-    "/api_tareas": {
+    "/api_tareas.php": {
       "get": {
         "operationId": "obtenerTareas",
         "summary": "Devuelve tareas del espacio indicado",
