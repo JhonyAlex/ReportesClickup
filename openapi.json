@@ -1,0 +1,62 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Reportes ClickUp API",
+    "version": "1.0.0",
+    "description": "API para obtener tareas filtradas desde ClickUp."
+  },
+  "servers": [
+    { "url": "https://reportes.pigmea.click" }
+  ],
+  "paths": {
+    "/api_tareas": {
+      "get": {
+        "operationId": "obtenerTareas",
+        "summary": "Devuelve tareas del espacio indicado",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "query",
+            "description": "Identificador del espacio o equipo",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "description": "Token opcional si no est\u00e1 definido en el servidor",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "dias",
+            "in": "query",
+            "description": "Filtrar por tareas actualizadas en los \u00faltimos N d\u00edas",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de tareas obtenidas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tasks": {
+                      "type": "array",
+                      "items": { "type": "object" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Par\u00e1metros faltantes" },
+          "500": { "description": "Fallo interno" }
+        }
+      }
+    }
+  }
+}

@@ -19,7 +19,7 @@ function obtenerToken(req) {
  * o en la consulta.
  */
 async function manejarApiTareas(req, res) {
-  const teamId = req.query.team_id;
+  const { team_id: teamId, token: _unused, dias, ...rest } = req.query;
   const token = obtenerToken(req);
 
   if (!teamId || !token) {
@@ -28,8 +28,14 @@ async function manejarApiTareas(req, res) {
     });
   }
 
+  const params = { ...rest };
+  if (dias) {
+    const ms = Date.now() - Number(dias) * 86400000;
+    params.date_updated_gt = ms;
+  }
+
   try {
-    const datos = await obtenerTareas(teamId, token);
+    const datos = await obtenerTareas(teamId, token, params);
     res.json(datos);
   } catch (err) {
     res.status(500).json({
