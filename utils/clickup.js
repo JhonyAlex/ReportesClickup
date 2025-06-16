@@ -102,6 +102,7 @@ async function obtenerUltimoComentario(taskId, token) {
   try {
     const datos = await callClickUp(`/task/${taskId}/comment`, token, {
       page_size: COMMENTS_PAGE_SIZE,
+      reverse: true, // Request comments newest first
     });
     const lista = Array.isArray(datos.comments) ? datos.comments : datos;
     if (!Array.isArray(lista) || lista.length === 0) return null;
@@ -177,6 +178,7 @@ async function obtenerTareas(teamId, token, params = {}, filtro = {}) {
         }
       })
     );
+    
 
     tareasReducidas = filtrarTareas(tareasReducidas, filtro);
     const respuesta = { ...datos, tasks: tareasReducidas };
