@@ -18,10 +18,35 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 /** Directorio donde se guarda la cache de tareas */
 const CACHE_DIR = path.join(__dirname, 'cache');
 
+// Número máximo de tareas a solicitar por defecto
+const DEFAULT_PAGE_SIZE = 50;
+
+// Campos mínimos a conservar de cada tarea para reducir la respuesta
+const TASK_FIELDS = [
+  'id',
+  'custom_id',
+  'name',
+  'text_content',
+  'description',
+  'status',
+  'date_created',
+  'date_updated',
+  'due_date',
+  'creator',
+  'assignees',
+  'url',
+];
+
+// Máximo de caracteres permitidos en las descripciones
+const DESCRIPTION_MAX_LENGTH = 500;
+
 module.exports = {
   API_TAREAS_ENDPOINTS,
   ACTUALIZAR_CACHE_ENDPOINTS,
   CLICKUP_API_BASE,
   DAY_MS,
   CACHE_DIR,
+  DEFAULT_PAGE_SIZE,
+  TASK_FIELDS,
+  DESCRIPTION_MAX_LENGTH,
 };
