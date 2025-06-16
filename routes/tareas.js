@@ -23,7 +23,15 @@ function obtenerToken(req) {
  * @returns {{teamId: string, token: string, params: Record<string, any>}|null}
  */
 function obtenerParametros(req) {
-  const { team_id: teamId, token: _unused, dias, ...rest } = req.query;
+  const {
+    team_id: teamId,
+    token: _unused,
+    dias,
+    prefix,
+    fecha,
+    timezone,
+    ...rest
+  } = req.query;
   const token = obtenerToken(req);
   if (!teamId || !token) {
     return null;
@@ -35,7 +43,8 @@ function obtenerParametros(req) {
       params.date_updated_gt = Date.now() - diasNum * DAY_MS;
     }
   }
-  return { teamId, token, params };
+  const filtro = { prefix, fecha, timezone };
+  return { teamId, token, params, filtro };
 }
 
 /**
@@ -49,10 +58,10 @@ async function manejarApiTareas(req, res) {
     return res.status(400).json({ error: 'Par\xC3\xA1metro team_id o token faltante' });
   }
 
-  const { teamId, token, params } = data;
+  const { teamId, token, params, filtro } = data;
 
   try {
-    const datos = await obtenerTareas(teamId, token, params);
+    const datos = await obtenerTareas(teamId, token, params, filtro);
     res.json(datos);
   } catch (err) {
     res.status(500).json({
@@ -71,9 +80,9 @@ async function manejarActualizarCache(req, res) {
     return res.status(400).json({ error: 'Par\xC3\xA1metro team_id o token faltante' });
   }
 
-  const { teamId, token, params } = data;
+  const { teamId, token, params, filtro } = data;
   try {
-    await obtenerTareas(teamId, token, params);
+    await obtenerTareas(teamId, token, params, filtro);
     res.json({ success: true, message: 'Cache actualizada' });
   } catch (err) {
     res.status(500).json({
