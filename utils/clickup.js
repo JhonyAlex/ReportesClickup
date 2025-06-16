@@ -13,9 +13,6 @@ const {
 
 /**
  * Realiza una solicitud a la API de ClickUp.
- * @param {string} endpoint - Endpoint a consultar.
- * @param {string} token - Token de autenticación para la API.
- * @returns {Promise<object>} Respuesta JSON de la API.
  */
 async function callClickUp(endpoint, token, params = {}) {
   const url = new URL(`${CLICKUP_API_BASE}${endpoint}`);
@@ -28,9 +25,7 @@ async function callClickUp(endpoint, token, params = {}) {
     const resp = await fetch(url.toString(), {
       headers: { Authorization: token },
     });
-    if (!resp.ok) {
-      throw new Error(`Error ${resp.status}`);
-    }
+    if (!resp.ok) throw new Error(`Error ${resp.status}`);
     return await resp.json();
   } catch (err) {
     throw new Error(`Fallo al conectar con ClickUp: ${err.message}`);
@@ -39,8 +34,6 @@ async function callClickUp(endpoint, token, params = {}) {
 
 /**
  * Lee la caché local de tareas.
- * @param {string} teamId - Identificador del equipo.
- * @returns {Promise<object|null>} Datos del archivo o null si no existe.
  */
 async function leerCache(teamId) {
   try {
@@ -54,8 +47,6 @@ async function leerCache(teamId) {
 
 /**
  * Guarda datos de tareas en la caché local.
- * @param {string} teamId - Identificador del equipo.
- * @param {object} datos - Datos de tareas a almacenar.
  */
 async function guardarCache(teamId, datos) {
   try {
@@ -63,15 +54,12 @@ async function guardarCache(teamId, datos) {
     const file = path.join(CACHE_DIR, `tareas_${teamId}.json`);
     await fs.writeFile(file, JSON.stringify(datos, null, 2));
   } catch (err) {
-    // Silencia errores de escritura para no afectar la respuesta principal
     console.error('Error guardando caché:', err.message);
   }
 }
 
 /**
  * Devuelve solo los campos necesarios de una tarea.
- * @param {object} tarea - Objeto de tarea completo recibido de ClickUp.
- * @returns {object} Tarea con campos reducidos.
  */
 function filtrarCampos(tarea) {
   const resultado = {};
@@ -92,42 +80,35 @@ function filtrarCampos(tarea) {
 }
 
 /**
-
- * Consulta los comentarios de una tarea y devuelve el último disponible.
- * @param {string} taskId Identificador de la tarea en ClickUp.
- * @param {string} token Token de autenticación para la API.
- * @returns {Promise<{text:string,date:number}|null>} Último comentario o null.
+ * Obtiene todos los comentarios y los filtra por fecha si se indica.
  */
-async function obtenerUltimoComentario(taskId, token) {
+async function obtenerComentariosFiltrados(taskId, token, fechaFiltro) {
   try {
     const datos = await callClickUp(`/task/${taskId}/comment`, token, {
       page_size: COMMENTS_PAGE_SIZE,
-      reverse: true, // Request comments newest first
+      reverse: true,
     });
-    const lista = Array.isArray(datos.comments) ? datos.comments : datos;
-    if (!Array.isArray(lista) || lista.length === 0) return null;
-    let ultimo = null;
-    for (const c of lista) {
-      const fecha = Number(c.date || c.date_created || 0);
-      if (!ultimo || fecha > ultimo.date) {
-        ultimo = {
-          text: c.comment_text || c.text || '',
-          date: fecha,
-        };
-      }
-    }
-    return ultimo;
+
+    const comentarios = Array.isArray(datos.comments) ? datos.comments : datos;
+
+    return comentarios
+      .map((c) => ({
+        text: c.comment_text || c.text || '',
+        date: Number(c.date || c.date_created || 0),
+        date_iso: new Date(Number(c.date || c.date_created || 0)).toISOString(),
+      }))
+      .filter((c) => {
+        if (!fechaFiltro) return true;
+        return c.date_iso.startsWith(fechaFiltro); // compara YYYY-MM-DD
+      });
   } catch (err) {
     console.error('Error obteniendo comentarios:', err.message);
-    return null;
+    return [];
   }
 }
 
 /**
  * Convierte una fecha local (YYYY-MM-DD) a timestamp UTC.
- * @param {string} fechaStr Fecha local.
- * @param {number} tz Diferencia horaria en horas respecto a UTC.
- * @returns {number} Timestamp en milisegundos.
  */
 function fechaLocalAUTC(fechaStr, tz) {
   const [y, m, d] = fechaStr.split('-').map(Number);
@@ -136,14 +117,6 @@ function fechaLocalAUTC(fechaStr, tz) {
 
 /**
  * Filtra las tareas por prefijo y rango de fechas locales.
- * @param {Array<object>} tareas Lista de tareas a filtrar.
- * @param {object} opciones Opciones de filtrado.
- * @param {string} [opciones.prefix] Prefijo que debe contener `custom_id`.
- * @param {string} [opciones.fecha] Fecha única YYYY-MM-DD a comparar.
- * @param {string} [opciones.fecha_inicio] Fecha inicial YYYY-MM-DD.
- * @param {string} [opciones.fecha_fin] Fecha final YYYY-MM-DD.
- * @param {number|string} [opciones.timezone] Diferencia horaria en horas respecto a UTC.
- * @returns {Array<object>} Tareas filtradas.
  */
 function filtrarTareas(
   tareas,
@@ -157,7 +130,7 @@ function filtrarTareas(
     );
   }
 
-  const tz = Number(timezone) || 0; // horas
+  const tz = Number(timezone) || 0;
   let inicio;
   let fin;
 
@@ -184,10 +157,7 @@ function filtrarTareas(
 }
 
 /**
- * Obtiene las tareas de un equipo en ClickUp.
- * @param {string} teamId - ID del equipo.
- * @param {string} token - Token de autenticación.
- * @returns {Promise<object>} Tareas obtenidas.
+ * Obtiene las tareas desde ClickUp o la caché local.
  */
 async function obtenerTareas(teamId, token, params = {}, filtro = {}) {
   const consulta = { page_size: DEFAULT_PAGE_SIZE, ...params };
@@ -198,13 +168,13 @@ async function obtenerTareas(teamId, token, params = {}, filtro = {}) {
 
     await Promise.all(
       tareasReducidas.map(async (t) => {
-        const ultimo = await obtenerUltimoComentario(t.id, token);
-        if (ultimo) {
-          t.last_comment = ultimo;
+        const comentarios = await obtenerComentariosFiltrados(t.id, token, filtro.fecha);
+        t.comentarios_actualizados = comentarios;
+        if (comentarios.length > 0) {
+          t.last_comment = comentarios[0]; // por compatibilidad
         }
       })
     );
-    
 
     tareasReducidas = filtrarTareas(tareasReducidas, filtro);
     const respuesta = { ...datos, tasks: tareasReducidas };
