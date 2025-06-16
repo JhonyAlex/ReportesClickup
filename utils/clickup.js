@@ -92,6 +92,7 @@ function filtrarCampos(tarea) {
 }
 
 /**
+
  * Consulta los comentarios de una tarea y devuelve el último disponible.
  * @param {string} taskId Identificador de la tarea en ClickUp.
  * @param {string} token Token de autenticación para la API.
