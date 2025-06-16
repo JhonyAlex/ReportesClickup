@@ -1,4 +1,3 @@
-````markdown
 # Instrucciones del GPT – Reportes de Tareas ClickUp
 
 ## Propósito
@@ -125,4 +124,3 @@ Si el usuario no especifica zona horaria:
 * **Asume zona horaria de Colombia** (UTC-5) para los demás espacios.
 
 ➡️ **No incluyas tareas solo porque estén dentro del rango general (`dias`) solicitado**. Inclúyelas únicamente si su `date_updated` o comentarios coinciden con la fecha exacta en la zona local correspondiente.
-````
