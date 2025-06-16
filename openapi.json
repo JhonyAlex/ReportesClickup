@@ -34,6 +34,13 @@
             "description": "Filtrar por tareas actualizadas en los últimos N días",
             "required": false,
             "schema": { "type": "integer", "minimum": 1 }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Número máximo de tareas a solicitar",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1 }
           }
         ],
         "responses": {
@@ -68,6 +75,13 @@
             "name": "dias",
             "in": "query",
             "description": "Número de días a consultar en ClickUp",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1 }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Número máximo de tareas a solicitar",
             "required": false,
             "schema": { "type": "integer", "minimum": 1 }
           }

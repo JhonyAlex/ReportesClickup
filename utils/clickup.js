@@ -1,7 +1,13 @@
 const fs = require('fs').promises;
 const path = require('path');
 const fetch = require('node-fetch');
-const { CLICKUP_API_BASE, CACHE_DIR } = require('../config');
+const {
+  CLICKUP_API_BASE,
+  CACHE_DIR,
+  DEFAULT_PAGE_SIZE,
+  TASK_FIELDS,
+  DESCRIPTION_MAX_LENGTH,
+} = require('../config');
 
 /**
  * Realiza una solicitud a la API de ClickUp.
@@ -61,16 +67,42 @@ async function guardarCache(teamId, datos) {
 }
 
 /**
+ * Devuelve solo los campos necesarios de una tarea.
+ * @param {object} tarea - Objeto de tarea completo recibido de ClickUp.
+ * @returns {object} Tarea con campos reducidos.
+ */
+function filtrarCampos(tarea) {
+  const resultado = {};
+  TASK_FIELDS.forEach((campo) => {
+    if (campo in tarea) {
+      let valor = tarea[campo];
+      if (
+        (campo === 'description' || campo === 'text_content') &&
+        typeof valor === 'string' &&
+        valor.length > DESCRIPTION_MAX_LENGTH
+      ) {
+        valor = `${valor.slice(0, DESCRIPTION_MAX_LENGTH)}...`;
+      }
+      resultado[campo] = valor;
+    }
+  });
+  return resultado;
+}
+
+/**
  * Obtiene las tareas de un equipo en ClickUp.
  * @param {string} teamId - ID del equipo.
  * @param {string} token - Token de autenticación.
  * @returns {Promise<object>} Tareas obtenidas.
  */
 async function obtenerTareas(teamId, token, params = {}) {
+  const consulta = { page_size: DEFAULT_PAGE_SIZE, ...params };
   try {
-    const datos = await callClickUp(`/team/${teamId}/task`, token, params);
-    await guardarCache(teamId, datos);
-    return datos;
+    const datos = await callClickUp(`/team/${teamId}/task`, token, consulta);
+    const tareasReducidas = (datos.tasks || []).map(filtrarCampos);
+    const respuesta = { ...datos, tasks: tareasReducidas };
+    await guardarCache(teamId, respuesta);
+    return respuesta;
   } catch (err) {
     const cache = await leerCache(teamId);
     if (cache) {
