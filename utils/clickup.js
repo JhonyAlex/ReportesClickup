@@ -92,35 +92,57 @@ function filtrarCampos(tarea) {
 }
 
 /**
-
- * Consulta los comentarios de una tarea y devuelve el último disponible.
+ * Consulta los comentarios de una tarea y devuelve un listado simplificado.
  * @param {string} taskId Identificador de la tarea en ClickUp.
  * @param {string} token Token de autenticación para la API.
- * @returns {Promise<{text:string,date:number}|null>} Último comentario o null.
+ * @returns {Promise<Array<{text:string,date:number}>>} Lista de comentarios.
  */
-async function obtenerUltimoComentario(taskId, token) {
+async function obtenerComentarios(taskId, token) {
   try {
     const datos = await callClickUp(`/task/${taskId}/comment`, token, {
       page_size: COMMENTS_PAGE_SIZE,
-      reverse: true, // Request comments newest first
     });
     const lista = Array.isArray(datos.comments) ? datos.comments : datos;
-    if (!Array.isArray(lista) || lista.length === 0) return null;
-    let ultimo = null;
-    for (const c of lista) {
-      const fecha = Number(c.date || c.date_created || 0);
-      if (!ultimo || fecha > ultimo.date) {
-        ultimo = {
-          text: c.comment_text || c.text || '',
-          date: fecha,
-        };
-      }
-    }
-    return ultimo;
+    if (!Array.isArray(lista)) return [];
+    return lista.map((c) => ({
+      text: c.comment_text || c.text || '',
+      date: Number(c.date || c.date_created || 0),
+    }));
   } catch (err) {
     console.error('Error obteniendo comentarios:', err.message);
-    return null;
+    return [];
   }
+}
+
+/**
+ * Filtra comentarios por una fecha local concreta.
+ * @param {Array<{text:string,date:number}>} comentarios Lista de comentarios.
+ * @param {string} fecha Fecha YYYY-MM-DD a evaluar.
+ * @param {number|string} timezone Diferencia horaria en horas respecto a UTC.
+ * @returns {Array<{text:string,date:number}>} Comentarios dentro del rango.
+ */
+function filtrarComentarios(comentarios, fecha, timezone) {
+  if (!fecha) return comentarios;
+  const tz = Number(timezone) || 0;
+  const [y, m, d] = fecha.split('-').map(Number);
+  const inicio = Date.UTC(y, m - 1, d) - tz * 3600 * 1000;
+  const fin = inicio + DAY_MS - 1;
+  return comentarios.filter((c) => c.date >= inicio && c.date <= fin);
+}
+
+/**
+ * Devuelve el comentario más reciente de una lista.
+ * @param {Array<{text:string,date:number}>} comentarios Lista de comentarios.
+ * @returns {{text:string,date:number}|null} Comentario más nuevo o null.
+ */
+function obtenerUltimoComentario(comentarios) {
+  let ultimo = null;
+  for (const c of comentarios) {
+    if (!ultimo || c.date > ultimo.date) {
+      ultimo = c;
+    }
+  }
+  return ultimo;
 }
 
 /**
@@ -148,9 +170,12 @@ function filtrarTareas(tareas, { prefix, fecha, timezone } = {}) {
     const fin = inicio + DAY_MS - 1;
     filtradas = filtradas.filter((t) => {
       const actualizada = Number(t.date_updated);
-      const coment = t.last_comment ? Number(t.last_comment.date) : 0;
+      const comentarios = Array.isArray(t.comments) ? t.comments : [];
       const enRango = (valor) => valor >= inicio && valor <= fin;
-      return enRango(actualizada) || enRango(coment);
+      const comentarioEnRango = comentarios.some((c) => enRango(c.date));
+      const ultimoEnRango =
+        t.last_comment && enRango(Number(t.last_comment.date));
+      return enRango(actualizada) || comentarioEnRango || ultimoEnRango;
     });
   }
 
@@ -172,13 +197,15 @@ async function obtenerTareas(teamId, token, params = {}, filtro = {}) {
 
     await Promise.all(
       tareasReducidas.map(async (t) => {
-        const ultimo = await obtenerUltimoComentario(t.id, token);
-        if (ultimo) {
-          t.last_comment = ultimo;
-        }
+        const comentarios = await obtenerComentarios(t.id, token);
+        t.last_comment = obtenerUltimoComentario(comentarios) || undefined;
+        t.comments = filtrarComentarios(
+          comentarios,
+          filtro.fecha,
+          filtro.timezone,
+        );
       })
     );
-    
 
     tareasReducidas = filtrarTareas(tareasReducidas, filtro);
     const respuesta = { ...datos, tasks: tareasReducidas };
