@@ -1,0 +1,139 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Reportes ClickUp API",
+    "version": "1.0.0",
+    "description": "Devuelve tareas cacheadas en un archivo local generado previamente desde la API de ClickUp."
+  },
+  "servers": [
+    { "url": "https://reportes.pigmea.click" }
+  ],
+  "paths": {
+    "/api_tareas.php": {
+      "get": {
+        "operationId": "obtenerTareas",
+        "summary": "Devuelve tareas del espacio indicado",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "query",
+            "description": "Identificador del espacio o equipo",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "description": "Token opcional si no está definido en el servidor",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "dias",
+            "in": "query",
+            "description": "Filtrar por tareas actualizadas en los últimos N días",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1 }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Número máximo de tareas a solicitar",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1 }
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "description": "Prefijo del custom_id para filtrar tareas (ej. PIGMEA-)",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "fecha",
+            "in": "query",
+            "description": "Fecha local YYYY-MM-DD para filtrar por date_updated",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "description": "Zona horaria en horas respecto a UTC (ej. 2, -5)",
+            "required": false,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de tareas obtenidas"
+          },
+          "400": { "description": "Parámetros faltantes" },
+          "500": { "description": "Fallo interno" }
+        }
+      }
+    },
+    "/actualizar_cache.php": {
+      "get": {
+        "operationId": "actualizarCache",
+        "summary": "Refresca la caché local consultando ClickUp",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "query",
+            "description": "Identificador del espacio o equipo",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "description": "Token opcional si no está definido en el servidor",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "dias",
+            "in": "query",
+            "description": "Número de días a consultar en ClickUp",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1 }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Número máximo de tareas a solicitar",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1 }
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "description": "Prefijo del custom_id para filtrar tareas (ej. PIGMEA-)",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "fecha",
+            "in": "query",
+            "description": "Fecha local YYYY-MM-DD para filtrar por date_updated",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "description": "Zona horaria en horas respecto a UTC (ej. 2, -5)",
+            "required": false,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Cache actualizada" },
+          "400": { "description": "Parámetros faltantes" },
+          "500": { "description": "Fallo interno" }
+        }
+      }
+    }
+  }
+}
