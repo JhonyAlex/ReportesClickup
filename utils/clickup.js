@@ -90,23 +90,57 @@ function filtrarCampos(tarea) {
 }
 
 /**
+ * Filtra las tareas por prefijo de ID y fecha local.
+ * @param {Array<object>} tareas Lista de tareas a filtrar.
+ * @param {object} opciones Opciones de filtrado.
+ * @param {string} [opciones.prefix] Prefijo que debe contener `custom_id`.
+ * @param {string} [opciones.fecha] Fecha en formato YYYY-MM-DD a comparar con `date_updated`.
+ * @param {number|string} [opciones.timezone] Diferencia horaria en horas respecto a UTC.
+ * @returns {Array<object>} Tareas filtradas.
+ */
+function filtrarTareas(tareas, { prefix, fecha, timezone } = {}) {
+  let filtradas = Array.from(tareas);
+
+  if (prefix) {
+    filtradas = filtradas.filter(
+      (t) => typeof t.custom_id === 'string' && t.custom_id.startsWith(prefix)
+    );
+  }
+
+  if (fecha) {
+    const tz = Number(timezone) || 0; // horas
+    const [y, m, d] = fecha.split('-').map(Number);
+    const inicio = Date.UTC(y, m - 1, d) - tz * 3600 * 1000;
+    const fin = inicio + 24 * 3600 * 1000 - 1;
+    filtradas = filtradas.filter((t) => {
+      const actualizada = Number(t.date_updated);
+      return actualizada >= inicio && actualizada <= fin;
+    });
+  }
+
+  return filtradas;
+}
+
+/**
  * Obtiene las tareas de un equipo en ClickUp.
  * @param {string} teamId - ID del equipo.
  * @param {string} token - Token de autenticación.
  * @returns {Promise<object>} Tareas obtenidas.
  */
-async function obtenerTareas(teamId, token, params = {}) {
+async function obtenerTareas(teamId, token, params = {}, filtro = {}) {
   const consulta = { page_size: DEFAULT_PAGE_SIZE, ...params };
   try {
     const datos = await callClickUp(`/team/${teamId}/task`, token, consulta);
-    const tareasReducidas = (datos.tasks || []).map(filtrarCampos);
+    let tareasReducidas = (datos.tasks || []).map(filtrarCampos);
+    tareasReducidas = filtrarTareas(tareasReducidas, filtro);
     const respuesta = { ...datos, tasks: tareasReducidas };
     await guardarCache(teamId, respuesta);
     return respuesta;
   } catch (err) {
     const cache = await leerCache(teamId);
     if (cache) {
-      return cache;
+      const filtradas = filtrarTareas(cache.tasks || [], filtro);
+      return { ...cache, tasks: filtradas };
     }
     throw err;
   }

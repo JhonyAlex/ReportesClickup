@@ -69,8 +69,8 @@ web: node index.js
 
 | Método | Ruta                                              | Descripción                                                                     |
 | ------ | ------------------------------------------------- | ------------------------------------------------------------------------------- |
-| GET    | `/api_tareas?team_id=9015702015`              | Devuelve el JSON cacheado con tareas.                                           |
-| GET    | `/actualizar_cache?team_id=9015702015&dias=7` | Llama a ClickUp, filtra últimas *N* días, guarda en `cache/tareas_{team}.json`. |
+| GET    | `/api_tareas?team_id=9015702015`              | Devuelve el JSON cacheado con tareas. Permite filtrar con `prefix`, `fecha` y `timezone`. |
+| GET    | `/actualizar_cache?team_id=9015702015&dias=7` | Llama a ClickUp, filtra últimas *N* días, guarda en `cache/tareas_{team}.json`. Acepta también `prefix`, `fecha` y `timezone`. |
 
 ### Ejemplo de respuesta `/api_tareas.php`
 

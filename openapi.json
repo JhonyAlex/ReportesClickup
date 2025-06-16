@@ -41,6 +41,27 @@
             "description": "Número máximo de tareas a solicitar",
             "required": false,
             "schema": { "type": "integer", "minimum": 1 }
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "description": "Prefijo del custom_id para filtrar tareas (ej. PIGMEA-)",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "fecha",
+            "in": "query",
+            "description": "Fecha local YYYY-MM-DD para filtrar por date_updated",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "description": "Zona horaria en horas respecto a UTC (ej. 2, -5)",
+            "required": false,
+            "schema": { "type": "integer" }
           }
         ],
         "responses": {
@@ -84,6 +105,27 @@
             "description": "Número máximo de tareas a solicitar",
             "required": false,
             "schema": { "type": "integer", "minimum": 1 }
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "description": "Prefijo del custom_id para filtrar tareas (ej. PIGMEA-)",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "fecha",
+            "in": "query",
+            "description": "Fecha local YYYY-MM-DD para filtrar por date_updated",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "description": "Zona horaria en horas respecto a UTC (ej. 2, -5)",
+            "required": false,
+            "schema": { "type": "integer" }
           }
         ],
         "responses": {
