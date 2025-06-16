@@ -5,6 +5,7 @@ const {
   CLICKUP_API_BASE,
   CACHE_DIR,
   DEFAULT_PAGE_SIZE,
+  DEFAULT_INCLUDE_SUBTASKS,
   TASK_FIELDS,
   DESCRIPTION_MAX_LENGTH,
   COMMENTS_PAGE_SIZE,
@@ -35,9 +36,10 @@ async function callClickUp(endpoint, token, params = {}) {
 /**
  * Lee la caché local de tareas.
  */
-async function leerCache(teamId) {
+async function leerCache(teamId, listId) {
   try {
-    const file = path.join(CACHE_DIR, `tareas_${teamId}.json`);
+    const sufijo = listId ? `_${listId}` : '';
+    const file = path.join(CACHE_DIR, `tareas_${teamId}${sufijo}.json`);
     const contenido = await fs.readFile(file, 'utf8');
     return JSON.parse(contenido);
   } catch (err) {
@@ -48,10 +50,11 @@ async function leerCache(teamId) {
 /**
  * Guarda datos de tareas en la caché local.
  */
-async function guardarCache(teamId, datos) {
+async function guardarCache(teamId, listId, datos) {
   try {
     await fs.mkdir(CACHE_DIR, { recursive: true });
-    const file = path.join(CACHE_DIR, `tareas_${teamId}.json`);
+    const sufijo = listId ? `_${listId}` : '';
+    const file = path.join(CACHE_DIR, `tareas_${teamId}${sufijo}.json`);
     await fs.writeFile(file, JSON.stringify(datos, null, 2));
   } catch (err) {
     console.error('Error guardando caché:', err.message);
@@ -160,9 +163,15 @@ function filtrarTareas(
  * Obtiene las tareas desde ClickUp o la caché local.
  */
 async function obtenerTareas(teamId, token, params = {}, filtro = {}) {
-  const consulta = { page_size: DEFAULT_PAGE_SIZE, ...params };
+  const { list_id: listId, ...rest } = params;
+  const consulta = {
+    page_size: DEFAULT_PAGE_SIZE,
+    subtasks: DEFAULT_INCLUDE_SUBTASKS,
+    ...rest,
+  };
+  const endpoint = listId ? `/list/${listId}/task` : `/team/${teamId}/task`;
   try {
-    const datos = await callClickUp(`/team/${teamId}/task`, token, consulta);
+    const datos = await callClickUp(endpoint, token, consulta);
     let tareasReducidas = (datos.tasks || []).map(filtrarCampos);
     tareasReducidas = filtrarTareas(tareasReducidas, { prefix: filtro.prefix });
 
@@ -178,10 +187,10 @@ async function obtenerTareas(teamId, token, params = {}, filtro = {}) {
 
     tareasReducidas = filtrarTareas(tareasReducidas, filtro);
     const respuesta = { ...datos, tasks: tareasReducidas };
-    await guardarCache(teamId, respuesta);
+    await guardarCache(teamId, listId, respuesta);
     return respuesta;
   } catch (err) {
-    const cache = await leerCache(teamId);
+    const cache = await leerCache(teamId, listId);
     if (cache) {
       const filtradas = filtrarTareas(cache.tasks || [], filtro);
       return { ...cache, tasks: filtradas };

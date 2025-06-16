@@ -22,6 +22,13 @@
             "schema": { "type": "string" }
           },
           {
+            "name": "list_id",
+            "in": "query",
+            "description": "ID de la lista para incluir subtareas",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
             "name": "token",
             "in": "query",
             "description": "Token opcional si no está definido en el servidor",
@@ -97,6 +104,13 @@
             "in": "query",
             "description": "Identificador del espacio o equipo",
             "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "list_id",
+            "in": "query",
+            "description": "ID de la lista para incluir subtareas",
+            "required": false,
             "schema": { "type": "string" }
           },
           {

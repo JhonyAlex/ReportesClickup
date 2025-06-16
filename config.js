@@ -21,6 +21,9 @@ const CACHE_DIR = path.join(__dirname, 'cache');
 // Número máximo de tareas a solicitar por defecto
 const DEFAULT_PAGE_SIZE = 50;
 
+// Incluir subtareas en las consultas por defecto
+const DEFAULT_INCLUDE_SUBTASKS = true;
+
 // Campos mínimos a conservar de cada tarea para reducir la respuesta
 const TASK_FIELDS = [
   'id',
@@ -50,6 +53,7 @@ module.exports = {
   DAY_MS,
   CACHE_DIR,
   DEFAULT_PAGE_SIZE,
+  DEFAULT_INCLUDE_SUBTASKS,
   TASK_FIELDS,
   DESCRIPTION_MAX_LENGTH,
   COMMENTS_PAGE_SIZE,
