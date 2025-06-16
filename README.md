@@ -69,8 +69,8 @@ web: node index.js
 
 | Método | Ruta                                              | Descripción                                                                     |
 | ------ | ------------------------------------------------- | ------------------------------------------------------------------------------- |
-| GET    | `/api_tareas?team_id=9015702015`              | Devuelve el JSON cacheado con tareas.                                           |
-| GET    | `/actualizar_cache?team_id=9015702015&dias=7` | Llama a ClickUp, filtra últimas *N* días, guarda en `cache/tareas_{team}.json`. |
+| GET    | `/api_tareas?team_id=9015702015`              | Devuelve el JSON cacheado con tareas y comentarios del día solicitado. Permite filtrar con `prefix`, `fecha` y `timezone`. |
+| GET    | `/actualizar_cache?team_id=9015702015&dias=7` | Llama a ClickUp, filtra últimas *N* días, guarda en `cache/tareas_{team}.json`. Acepta también `prefix`, `fecha` y `timezone`. |
 
 ### Ejemplo de respuesta `/api_tareas.php`
 
@@ -83,7 +83,17 @@ web: node index.js
       "description": "...",
       "status": { "status": "to do" },
       "date_created": "1749855034873",
-      "url": "https://app.clickup.com/t/86c40dy0g"
+      "url": "https://app.clickup.com/t/86c40dy0g",
+      "last_comment": {
+        "text": "Comentario más reciente",
+        "date": 1749911110000
+      },
+      "comments": [
+        {
+          "text": "Comentario filtrado",
+          "date": 1749911110000
+        }
+      ]
     },
     ...
   ]

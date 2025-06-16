@@ -40,6 +40,9 @@ const TASK_FIELDS = [
 // Máximo de caracteres permitidos en las descripciones
 const DESCRIPTION_MAX_LENGTH = 500;
 
+// Número máximo de comentarios que se consultarán por tarea
+const COMMENTS_PAGE_SIZE = 20;
+
 module.exports = {
   API_TAREAS_ENDPOINTS,
   ACTUALIZAR_CACHE_ENDPOINTS,
@@ -49,4 +52,5 @@ module.exports = {
   DEFAULT_PAGE_SIZE,
   TASK_FIELDS,
   DESCRIPTION_MAX_LENGTH,
+  COMMENTS_PAGE_SIZE,
 };

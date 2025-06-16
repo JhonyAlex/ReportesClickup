@@ -7,6 +7,8 @@ const {
   DEFAULT_PAGE_SIZE,
   TASK_FIELDS,
   DESCRIPTION_MAX_LENGTH,
+  COMMENTS_PAGE_SIZE,
+  DAY_MS,
 } = require('../config');
 
 /**
@@ -90,23 +92,130 @@ function filtrarCampos(tarea) {
 }
 
 /**
+ * Consulta los comentarios de una tarea y devuelve un listado simplificado.
+ * @param {string} taskId Identificador de la tarea en ClickUp.
+ * @param {string} token Token de autenticación para la API.
+ * @returns {Promise<Array<{text:string,date:number}>>} Lista de comentarios.
+ */
+async function obtenerComentarios(taskId, token) {
+  try {
+    const datos = await callClickUp(`/task/${taskId}/comment`, token, {
+      page_size: COMMENTS_PAGE_SIZE,
+    });
+    const lista = Array.isArray(datos.comments) ? datos.comments : datos;
+    if (!Array.isArray(lista)) return [];
+    return lista.map((c) => ({
+      text: c.comment_text || c.text || '',
+      date: Number(c.date || c.date_created || 0),
+    }));
+  } catch (err) {
+    console.error('Error obteniendo comentarios:', err.message);
+    return [];
+  }
+}
+
+/**
+ * Filtra comentarios por una fecha local concreta.
+ * @param {Array<{text:string,date:number}>} comentarios Lista de comentarios.
+ * @param {string} fecha Fecha YYYY-MM-DD a evaluar.
+ * @param {number|string} timezone Diferencia horaria en horas respecto a UTC.
+ * @returns {Array<{text:string,date:number}>} Comentarios dentro del rango.
+ */
+function filtrarComentarios(comentarios, fecha, timezone) {
+  if (!fecha) return comentarios;
+  const tz = Number(timezone) || 0;
+  const [y, m, d] = fecha.split('-').map(Number);
+  const inicio = Date.UTC(y, m - 1, d) - tz * 3600 * 1000;
+  const fin = inicio + DAY_MS - 1;
+  return comentarios.filter((c) => c.date >= inicio && c.date <= fin);
+}
+
+/**
+ * Devuelve el comentario más reciente de una lista.
+ * @param {Array<{text:string,date:number}>} comentarios Lista de comentarios.
+ * @returns {{text:string,date:number}|null} Comentario más nuevo o null.
+ */
+function obtenerUltimoComentario(comentarios) {
+  let ultimo = null;
+  for (const c of comentarios) {
+    if (!ultimo || c.date > ultimo.date) {
+      ultimo = c;
+    }
+  }
+  return ultimo;
+}
+
+/**
+ * Filtra las tareas por prefijo de ID y fecha local.
+ * @param {Array<object>} tareas Lista de tareas a filtrar.
+ * @param {object} opciones Opciones de filtrado.
+ * @param {string} [opciones.prefix] Prefijo que debe contener `custom_id`.
+ * @param {string} [opciones.fecha] Fecha en formato YYYY-MM-DD a comparar con `date_updated`.
+ * @param {number|string} [opciones.timezone] Diferencia horaria en horas respecto a UTC.
+ * @returns {Array<object>} Tareas filtradas.
+ */
+function filtrarTareas(tareas, { prefix, fecha, timezone } = {}) {
+  let filtradas = Array.from(tareas);
+
+  if (prefix) {
+    filtradas = filtradas.filter(
+      (t) => typeof t.custom_id === 'string' && t.custom_id.startsWith(prefix)
+    );
+  }
+
+  if (fecha) {
+    const tz = Number(timezone) || 0; // horas
+    const [y, m, d] = fecha.split('-').map(Number);
+    const inicio = Date.UTC(y, m - 1, d) - tz * 3600 * 1000;
+    const fin = inicio + DAY_MS - 1;
+    filtradas = filtradas.filter((t) => {
+      const actualizada = Number(t.date_updated);
+      const comentarios = Array.isArray(t.comments) ? t.comments : [];
+      const enRango = (valor) => valor >= inicio && valor <= fin;
+      const comentarioEnRango = comentarios.some((c) => enRango(c.date));
+      const ultimoEnRango =
+        t.last_comment && enRango(Number(t.last_comment.date));
+      return enRango(actualizada) || comentarioEnRango || ultimoEnRango;
+    });
+  }
+
+  return filtradas;
+}
+
+/**
  * Obtiene las tareas de un equipo en ClickUp.
  * @param {string} teamId - ID del equipo.
  * @param {string} token - Token de autenticación.
  * @returns {Promise<object>} Tareas obtenidas.
  */
-async function obtenerTareas(teamId, token, params = {}) {
+async function obtenerTareas(teamId, token, params = {}, filtro = {}) {
   const consulta = { page_size: DEFAULT_PAGE_SIZE, ...params };
   try {
     const datos = await callClickUp(`/team/${teamId}/task`, token, consulta);
-    const tareasReducidas = (datos.tasks || []).map(filtrarCampos);
+    let tareasReducidas = (datos.tasks || []).map(filtrarCampos);
+    tareasReducidas = filtrarTareas(tareasReducidas, { prefix: filtro.prefix });
+
+    await Promise.all(
+      tareasReducidas.map(async (t) => {
+        const comentarios = await obtenerComentarios(t.id, token);
+        t.last_comment = obtenerUltimoComentario(comentarios) || undefined;
+        t.comments = filtrarComentarios(
+          comentarios,
+          filtro.fecha,
+          filtro.timezone,
+        );
+      })
+    );
+
+    tareasReducidas = filtrarTareas(tareasReducidas, filtro);
     const respuesta = { ...datos, tasks: tareasReducidas };
     await guardarCache(teamId, respuesta);
     return respuesta;
   } catch (err) {
     const cache = await leerCache(teamId);
     if (cache) {
-      return cache;
+      const filtradas = filtrarTareas(cache.tasks || [], filtro);
+      return { ...cache, tasks: filtradas };
     }
     throw err;
   }
