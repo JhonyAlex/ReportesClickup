@@ -29,6 +29,8 @@ function obtenerParametros(req) {
     dias,
     prefix,
     fecha,
+    fecha_inicio,
+    fecha_fin,
     timezone,
     ...rest
   } = req.query;
@@ -43,7 +45,7 @@ function obtenerParametros(req) {
       params.date_updated_gt = Date.now() - diasNum * DAY_MS;
     }
   }
-  const filtro = { prefix, fecha, timezone };
+  const filtro = { prefix, fecha, fecha_inicio, fecha_fin, timezone };
   return { teamId, token, params, filtro };
 }
 

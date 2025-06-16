@@ -124,15 +124,31 @@ async function obtenerUltimoComentario(taskId, token) {
 }
 
 /**
- * Filtra las tareas por prefijo de ID y fecha local.
+ * Convierte una fecha local (YYYY-MM-DD) a timestamp UTC.
+ * @param {string} fechaStr Fecha local.
+ * @param {number} tz Diferencia horaria en horas respecto a UTC.
+ * @returns {number} Timestamp en milisegundos.
+ */
+function fechaLocalAUTC(fechaStr, tz) {
+  const [y, m, d] = fechaStr.split('-').map(Number);
+  return Date.UTC(y, m - 1, d) - tz * 3600 * 1000;
+}
+
+/**
+ * Filtra las tareas por prefijo y rango de fechas locales.
  * @param {Array<object>} tareas Lista de tareas a filtrar.
  * @param {object} opciones Opciones de filtrado.
  * @param {string} [opciones.prefix] Prefijo que debe contener `custom_id`.
- * @param {string} [opciones.fecha] Fecha en formato YYYY-MM-DD a comparar con `date_updated`.
+ * @param {string} [opciones.fecha] Fecha única YYYY-MM-DD a comparar.
+ * @param {string} [opciones.fecha_inicio] Fecha inicial YYYY-MM-DD.
+ * @param {string} [opciones.fecha_fin] Fecha final YYYY-MM-DD.
  * @param {number|string} [opciones.timezone] Diferencia horaria en horas respecto a UTC.
  * @returns {Array<object>} Tareas filtradas.
  */
-function filtrarTareas(tareas, { prefix, fecha, timezone } = {}) {
+function filtrarTareas(
+  tareas,
+  { prefix, fecha, fecha_inicio, fecha_fin, timezone } = {}
+) {
   let filtradas = Array.from(tareas);
 
   if (prefix) {
@@ -141,11 +157,21 @@ function filtrarTareas(tareas, { prefix, fecha, timezone } = {}) {
     );
   }
 
+  const tz = Number(timezone) || 0; // horas
+  let inicio;
+  let fin;
+
   if (fecha) {
-    const tz = Number(timezone) || 0; // horas
-    const [y, m, d] = fecha.split('-').map(Number);
-    const inicio = Date.UTC(y, m - 1, d) - tz * 3600 * 1000;
-    const fin = inicio + DAY_MS - 1;
+    inicio = fechaLocalAUTC(fecha, tz);
+    fin = inicio + DAY_MS - 1;
+  } else if (fecha_inicio || fecha_fin) {
+    const desde = fecha_inicio || fecha_fin;
+    const hasta = fecha_fin || fecha_inicio;
+    inicio = fechaLocalAUTC(desde, tz);
+    fin = fechaLocalAUTC(hasta, tz) + DAY_MS - 1;
+  }
+
+  if (inicio !== undefined) {
     filtradas = filtradas.filter((t) => {
       const actualizada = Number(t.date_updated);
       const coment = t.last_comment ? Number(t.last_comment.date) : 0;

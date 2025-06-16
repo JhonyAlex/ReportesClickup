@@ -50,6 +50,20 @@
             "schema": { "type": "string" }
           },
           {
+            "name": "fecha_inicio",
+            "in": "query",
+            "description": "Fecha local inicial YYYY-MM-DD para filtrar",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "fecha_fin",
+            "in": "query",
+            "description": "Fecha local final YYYY-MM-DD para filtrar",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
             "name": "fecha",
             "in": "query",
             "description": "Fecha local YYYY-MM-DD para filtrar por date_updated",
@@ -112,6 +126,20 @@
             "description": "Prefijo del custom_id para filtrar tareas (ej. PIGMEA-)",
             "required": false,
             "schema": { "type": "string" }
+          },
+          {
+            "name": "fecha_inicio",
+            "in": "query",
+            "description": "Fecha local inicial YYYY-MM-DD para filtrar",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "fecha_fin",
+            "in": "query",
+            "description": "Fecha local final YYYY-MM-DD para filtrar",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
           },
           {
             "name": "fecha",
