@@ -9,6 +9,9 @@ const API_TAREAS_ENDPOINTS = ['/api_tareas', '/api_tareas.php'];
 /** Rutas para actualizar manualmente la caché */
 const ACTUALIZAR_CACHE_ENDPOINTS = ['/actualizar_cache', '/actualizar_cache.php'];
 
+/** Rutas para obtener tareas de todas las listas en una carpeta */
+const CARPETA_TAREAS_ENDPOINTS = ['/tareas_carpeta', '/tareas_carpeta.php'];
+
 /** URL base para todas las llamadas a la API de ClickUp */
 const CLICKUP_API_BASE = 'https://api.clickup.com/api/v2';
 
@@ -49,6 +52,7 @@ const COMMENTS_PAGE_SIZE = 20;
 module.exports = {
   API_TAREAS_ENDPOINTS,
   ACTUALIZAR_CACHE_ENDPOINTS,
+  CARPETA_TAREAS_ENDPOINTS,
   CLICKUP_API_BASE,
   DAY_MS,
   CACHE_DIR,

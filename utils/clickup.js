@@ -199,6 +199,34 @@ async function obtenerTareas(teamId, token, params = {}, filtro = {}) {
   }
 }
 
+/**
+ * Devuelve las listas dentro de una carpeta.
+ */
+async function obtenerListasCarpeta(folderId, token) {
+  const datos = await callClickUp(`/folder/${folderId}/list`, token);
+  return Array.isArray(datos.lists) ? datos.lists : [];
+}
+
+/**
+ * Obtiene las tareas de todas las listas en una carpeta.
+ */
+async function obtenerTareasCarpeta(folderId, token, params = {}, filtro = {}) {
+  const listas = await obtenerListasCarpeta(folderId, token);
+  const resultados = [];
+  for (const lista of listas) {
+    const datos = await obtenerTareas(
+      `folder_${folderId}`,
+      token,
+      { ...params, list_id: lista.id },
+      filtro,
+    );
+    resultados.push({ lista, tasks: datos.tasks });
+  }
+  return resultados;
+}
+
 module.exports = {
   obtenerTareas,
+  obtenerListasCarpeta,
+  obtenerTareasCarpeta,
 };
