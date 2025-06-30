@@ -173,6 +173,82 @@
         "responses": {
           "200": { "description": "Cache actualizada" },
           "400": { "description": "Parámetros faltantes" },
+        "500": { "description": "Fallo interno" }
+        }
+      }
+    },
+    "/tareas_carpeta.php": {
+      "get": {
+        "operationId": "obtenerTareasCarpeta",
+        "summary": "Devuelve tareas de todas las listas de una carpeta",
+        "parameters": [
+          {
+            "name": "folder_id",
+            "in": "query",
+            "description": "Identificador de la carpeta",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "token",
+            "in": "query",
+            "description": "Token opcional si no está definido en el servidor",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "dias",
+            "in": "query",
+            "description": "Número de días a consultar en ClickUp",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1 }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Número máximo de tareas a solicitar",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1 }
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "description": "Prefijo del custom_id para filtrar tareas (ej. PIGMEA-)",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "fecha_inicio",
+            "in": "query",
+            "description": "Fecha local inicial YYYY-MM-DD para filtrar",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "fecha_fin",
+            "in": "query",
+            "description": "Fecha local final YYYY-MM-DD para filtrar",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "fecha",
+            "in": "query",
+            "description": "Fecha local YYYY-MM-DD para filtrar por date_updated",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "timezone",
+            "in": "query",
+            "description": "Zona horaria en horas respecto a UTC (ej. 2, -5)",
+            "required": false,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Lista de tareas obtenidas" },
+          "400": { "description": "Parámetros faltantes" },
           "500": { "description": "Fallo interno" }
         }
       }
